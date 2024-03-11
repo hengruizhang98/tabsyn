@@ -145,7 +145,10 @@ Then, write a .json file ([NAME_OF_DATASET].json) recording the metadata of the 
 ```
 Put this .json file in the .Info directory.
 
+Finally, run the following command to process the UDF dataset:
+```
 
+```
 
 ## Training Models
 
