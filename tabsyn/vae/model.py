@@ -388,3 +388,44 @@ class Decoder_model(nn.Module):
         x_hat_num, x_hat_cat = self.Detokenizer(h)
 
         return x_hat_num, x_hat_cat
+
+
+class Mask_Encoder_model(nn.Module):
+    def __init__(self, num_layers, d_numerical, categories, d_token, n_head, factor, bias = True):
+        super(Mask_Encoder_model, self).__init__()
+        self.Tokenizer = Tokenizer(d_numerical, categories, d_token, bias)
+        self.VAE_Encoder = Transformer(num_layers, d_token, n_head, d_token, factor)
+
+        self.d_numerical = d_numerical
+        self.d_token = d_token
+        self.categories = categories
+
+    def load_weights(self, Pretrained_VAE):
+        self.Tokenizer.load_state_dict(Pretrained_VAE.VAE.Tokenizer.state_dict())
+        self.VAE_Encoder.load_state_dict(Pretrained_VAE.VAE.encoder_mu.state_dict())
+
+    def forward(self, x_num, x_cat, mask_cat_col):
+        x = self.Tokenizer(x_num, x_cat)
+        
+        bias = torch.cat(
+                [
+                    torch.zeros(1, self.Tokenizer.bias.shape[1], device=x.device),
+                    self.Tokenizer.bias,
+                ]
+            )
+        x = x - bias
+
+        categories_embedding = self.Tokenizer.category_embeddings.weight
+
+        start_idx = (self.d_numerical + 1) * self.d_token
+
+        for col_idx in mask_cat_col:
+            start = start_idx + sum(self.categories[:col_idx])
+            end = start_idx + sum(self.categories[:col_idx + 1])
+
+            x[:, self.d_numerical + 1 + col_idx] = categories_embedding[start:end].mean(0)
+
+        x += bias
+        z = self.VAE_Encoder(x)
+        
+        return z

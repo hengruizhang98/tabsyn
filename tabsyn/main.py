@@ -89,7 +89,7 @@ def main(args):
             torch.save(model.state_dict(), f'{ckpt_path}/model.pt')
         else:
             patience += 1
-            if patience == 500:
+            if patience == 1000:
                 print('Early stopping')
                 break
 
