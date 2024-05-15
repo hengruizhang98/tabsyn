@@ -18,7 +18,6 @@ parser = argparse.ArgumentParser(description='Missing Value Imputation for the T
 
 parser.add_argument('--dataname', type=str, default='adult', help='Name of dataset.')
 parser.add_argument('--gpu', type=int, default=0, help='GPU index.')
-parser.add_argument('--epoch', type=int, default=None, help='Epoch.')
 
 args = parser.parse_args()
 
